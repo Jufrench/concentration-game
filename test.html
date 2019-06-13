@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta http-equiv="X-UA-Compatible" content="ie=edge">
+  <title>Document</title>
+</head>
+<body>
+  <button id="the-button">add a class</button>
+  <div class="container">
+    <div class="child">
+      <div class="grandchild"></div>
+    </div>
+  </div>
+  <div class="container"></div>
+  <div class="container"></div>
+  <div class="container"></div>
+</body>
+<script>
+  let config = {attributes: true, childList: false, subtree: false};
+  let mutationOb = new MutationObserver(mCallback);
+  function mCallback(mutations) {
+    console.log(mutations);
+  }
+  mutationOb.observe(document.querySelector('.container'), config);
+  let container = document.querySelector('.container');
+  let button = document.querySelector('#the-button');
+  button.addEventListener('click', function() {
+    container.classList.toggle('test-class');
+  });
+</script>
+</html>
