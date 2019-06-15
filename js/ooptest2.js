@@ -17,6 +17,7 @@
      this.init = () => {
        this.createCardHTML(2);
      }
+
      this.createCardHTML = amount => {
        amount = amount * 2;
        let fragment = document.createDocumentFragment();
@@ -36,6 +37,7 @@
        document.querySelector('.card-list').appendChild(fragment);
        this.loadCardsArray();
      }
+
      this.loadCardsArray = () => {
         for (cardElement of cardList.querySelectorAll('.card')) {
            operator.cardsArray.push(new Card(cardElement));
@@ -44,6 +46,7 @@
         console.log(operator.cardsArray);
         this.addDataAttribute();
      }
+
      this.addDataAttribute = () => {
        operator.cardsArray.forEach(function(card, index, thisArray) {
          card.element.dataset.number = thisArray.indexOf(card);
@@ -85,13 +88,19 @@
      this.currentlyFlipped = [];
      // this.matched = false;
 
-     this.stateOperator = cardTarget => {
+     this.stateOperator = mutation => {
+        if (mutation.target.classList.contains('matched')) {
+           console.log(`has the class matched`);
+           return;
+        } else {
+           this.pushTocurrentlyFlipped(mutation);
+        }
 
-       (function pushTocurrentlyFlipped(cardTarget, flipped) {
-         flipped.push(cardTarget.target);
-         console.log(`Currently Flipped:`, flipped);
-         // this.stateOperator();
-       })(cardTarget, this.currentlyFlipped);
+      //  (function pushTocurrentlyFlipped(mutation, flipped) {
+      //    flipped.push(mutation.target);
+      //    console.log(`Currently Flipped:`, flipped);
+      //    // this.stateOperator();
+      // })(mutation, this.currentlyFlipped);
 
        // If there are 2 cards currently selected
        if (this.currentlyFlipped.length === 2) {
@@ -99,22 +108,30 @@
 
          // If the 2 cards currently selected match
          if (matched) {
-           console.log(`They Match!`);
-         } else {
+           this.stayFlipped(matched);
+         }
+         // If the 2 cards currently selected DON'T match
+         else {
            console.log(`They DON'T Match`);
          }
        }
-
      }
 
-     // this.pushTocurrentlyFlipped = (cardTarget) => {
-     //   this.currentlyFlipped.push(cardTarget.target);
-     //   console.log(`Currently Flipped:`, this.currentlyFlipped);
-     //   this.stateOperator();
-     // }
+     this.pushTocurrentlyFlipped = mutation => {
+       this.currentlyFlipped.push(mutation.target);
+       // console.log(`Currently Flipped:`, this.currentlyFlipped);
+    };
 
      this.checkForMatch = () => {
        return this.currentlyFlipped[0].isEqualNode(this.currentlyFlipped[1]);
+     }
+
+     this.stayFlipped = matchedPair => {
+        console.log(this.currentlyFlipped);
+        matchedPair.forEach(card => {
+           card.classList.add('matched');
+        });
+        // console.log(`I stay flipped`);
      }
    }
 
