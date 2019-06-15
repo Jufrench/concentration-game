@@ -1,142 +1,194 @@
+// TODO: Find out a way to look over the icon array twice
+
    const cardContainer = document.querySelector('.card-container');
+   const cardLis = document.querySelectorAll('.card');
    const cardList = document.querySelector('.card-list');
    const game = new Concentration();
+   const operator = new Operator();
    const observerConstructor = new MyObserverConstructor();
    const myObserver = new MutationObserver(observerConstructor.callback);
+   const cardState = new CardState();
 
    function Concentration() {
-     this.cardsArray = [];
-     this.flippedCards = 0;
-     this.currentSelected = [];
-     // this.icons = ['fa-crow', ];
+     this.icons = ['fa-crow', 'fa-crow', 'fa-horse', 'fa-horse', 'fa-cat',
+     'fa-cat',  'fa-otter', 'fa-otter', 'fa-hippo', 'fa-hippo', 'fa-fish',
+     'fa-fish', 'fa-frog', 'fa-frog', 'fa-dragon', 'fa-dragon'];
 
      this.init = () => {
-       this.createCardHTML(4);
+       this.createCardHTML(2);
      }
-
      this.createCardHTML = amount => {
+       amount = amount * 2;
        let fragment = document.createDocumentFragment();
+       let tempLength = fragment.childNodes.length * 2;
 
        for (let i = 1; i <= amount; i++) {
           let card = document.createElement('li');
           card.classList.add('card');
-          card.setAttribute('data-number', i);
-          card.innerHTML = `<div class="card-content"><div class="card-front card-face">Front</div><div class="card-back card-face">Back<i class="fas"></i></div></div>`;
-          // this.cardsArray.push(card);
+          card.innerHTML = `<div class="card-content" data-flippable="true"><div class="card-front card-face">Front</div><div class="card-back card-face"><i class="fas"></i></div></div>`;
           fragment.appendChild(card);
        }
+
+       for (let i = 0; i < fragment.childNodes.length; i++) {
+         fragment.childNodes[i].querySelector('.fas').classList.add(this.icons[i]);
+       }
+
        document.querySelector('.card-list').appendChild(fragment);
        this.loadCardsArray();
      }
-
      this.loadCardsArray = () => {
         for (cardElement of cardList.querySelectorAll('.card')) {
-           this.cardsArray.push(cardElement);
+           operator.cardsArray.push(new Card(cardElement));
         }
-        console.log(this.cardsArray);
+
+        console.log(operator.cardsArray);
+        this.addDataAttribute();
+     }
+     this.addDataAttribute = () => {
+       operator.cardsArray.forEach(function(card, index, thisArray) {
+         card.element.dataset.number = thisArray.indexOf(card);
+       });
      }
 
-     this.checkIfMatch = (cardTarget) => {
-        this.currentSelected.push(cardTarget[0].target);
+     this.stayFlipped = arrayParam => {
+       for (let card of arrayParam) {
+         // card.classList.add('matched');
+         card.dataset.flippable = !card.dataset.flippable;
+         // console.log(card.dataset.flippable);
+       }
+     }
 
-       if (this.currentSelected.length === 2) {
-         if (this.currentSelected[0].isEqualNode(this.currentSelected[1])) {
-            console.log(this.currentSelected);
-            console.log(`They're equal`);
-         } else {
-            console.log(`They're not equal`);
-         }
+     this.flipToFront = card => {
+       for (let card of arrayParam) {
+         card.classList.toggle('flipped');
+       }
+     }
 
-         this.currentSelected.length = 0;
-         console.log(this.currentSelected);
-      } else if (this.currentSelected.length > 0) {
-         console.log(`Flip another card`);
-         console.log(this.currentSelected);
-      }
-
+     this.flipToBack = card => {
+       let flippedCard = card.target;
+       // console.log('Flipped card:',flippedCard);
+       if (flippedCard.classList.contains('flipped')) {
+         card.flipped = true;
+         // console.log(card);
+       }
      }
    };
+
    game.init();
    myObserver.observe(cardContainer, observerConstructor.config);
-   // ========= cleaning this ============
-   // let config = {attributes: true, childList: true, subtree: true};
-   // let mutationOb = new MutationObserver(mCallback);
-   //
-   // function mCallback(mutations) {
-   //   console.log(mutations);
-   // }
-   //
-   // mutationOb.observe(cardContainer, config);
-   //
-   // cardContainer.addEventListener('click', function(e){
-   //   // console.log(e.target);
-   //   if (e.target.classList.contains('card-face')) {
-   //     e.target.parentElement.classList.toggle('flipped');
-   //   }
-   // });
-   // ========= end of cleaning this ============
-   // mutationOb.observe(cardContainer, config);
 
-   // button.addEventListener('click', function() {
-   //   container.classList.toggle('test-class');
-   // });
+   // ============== GAME STATE OPERATOR =======================
+   // ==========================================================
+   function Operator() {
+     this.cardsArray = [];
+     this.flippedCards = 0;
+     this.currentlyFlipped = [];
+     // this.matched = false;
 
-   function MyObserverConstructor() {
-     // this.observer = new MutationObserver(this.callback);
-     this.config = {attributes: true, childList: true, subtree: true};
+     this.stateOperator = cardTarget => {
 
-     this.callback = (mutationsList, observer) => {
-       // console.log(mutationsList);
-       game.checkIfMatch(mutationsList);
+       (function pushTocurrentlyFlipped(cardTarget, flipped) {
+         flipped.push(cardTarget.target);
+         console.log(`Currently Flipped:`, flipped);
+         // this.stateOperator();
+       })(cardTarget, this.currentlyFlipped);
+
+       // If there are 2 cards currently selected
+       if (this.currentlyFlipped.length === 2) {
+         let matched = this.checkForMatch();
+
+         // If the 2 cards currently selected match
+         if (matched) {
+           console.log(`They Match!`);
+         } else {
+           console.log(`They DON'T Match`);
+         }
+       }
+
      }
 
-     this.test = function() {
-       console.log('yo');
-     }
-     // this.cardList = document.querySelector('.card-list');
-     // this.config = {attributes: true, childList: false, subtree: true};
-     //
-     // this.callback = (mutationsList) => {
-       // console.log(mutationsList);
-
-       // if (game.currentSelected < 2) {
-       //     game.checkIfMatch(mutationsList[0].target);
-       //     for (mutation of mutationsList) {
-       //       game.checkIfMatch(mutation.target.parentElement);
-       //
-       //     }
-       // }
-       // return mutationsList[0].target;
-       // game.checkIfMatch(mutationsList.target.parentElement);
-       // game.checkIfMatch(mutationsList);
-       // console.log(mutationsList);
-       // game.checkIfMatch(mutation.type);
+     // this.pushTocurrentlyFlipped = (cardTarget) => {
+     //   this.currentlyFlipped.push(cardTarget.target);
+     //   console.log(`Currently Flipped:`, this.currentlyFlipped);
+     //   this.stateOperator();
      // }
 
-     // this.observer = new MutationObserver(this.callback);
+     this.checkForMatch = () => {
+       return this.currentlyFlipped[0].isEqualNode(this.currentlyFlipped[1]);
+     }
    }
 
-   function Card(number) {
-     this.name = `card${number}`;
-     this.number = number;
-     this.flipped = false;
+   // ============== CARD STATE & CARD =========================
+   // ==========================================================
+   function CardState() {
 
-     this.flip = function() {
-       this.flipped = !this.flipped;
-       console.log(this.classList);
-     };
+     this.updateCardState = (paramCard) => {
+       let domCard = paramCard.target.parentElement;
+       let domCardNumber = parseInt(domCard.dataset.number);
+       let objectCard = operator.cardsArray[domCard.dataset.number];
+       // console.log(`paramMatched:`, paramMatched);
 
-     this.showMe = () => {
-       console.log(`I'm number: ${this.number}`);
-     };
-   }
-
-   cardContainer.addEventListener('click', e => {
-     // if (game.flippedCards < 2) {
-       if (e.target.classList.contains('card-face')) {
-         e.target.parentElement.classList.toggle('flipped');
-         // console.log(game.flippedCards);
-         // game.flippedCards++;
+       // If element has class 'flipped', change its corresponding object's
+       // flipped property to true & its flippable property to false
+       if (paramCard.target.classList.contains('flipped')) {
+          objectCard.flipped = !objectCard.flipped;
+          objectCard.flippable = !objectCard.flippable;
+       } else {
+           objectCard.flipped = !objectCard.flipped;
+           objectCard.flippable = !objectCard.flippable;
        }
+
+       operator.cardsArray.map((item, index) => {
+         if (domCardNumber === index) {
+           operator.cardsArray
+         }
+       });
+     }
+
+     this.linkToCardObject = element => {
+       console.log(operator.cardsArray[operator.cardsArray.indexOf(element)]);
+     }
+   }
+
+   function Card(element) {
+     this.element = element;
+     this.cardClasses = element.querySelector('.card-content').classList;
+     this.flippable = true;
+     this.flipped = false;
+     this.matched = false;
+   }
+
+// ============== OBSERVER =========================
+// =================================================
+  function MyObserverConstructor() {
+    this.config = {
+      attributes: true,
+      childList: false,
+      subtree: true,
+      attributeFilter: ['class']
+    };
+
+    this.callback = (mutationsList, observer) => {
+      // game.checkForMatch(mutationsList);
+      // game.flipToBack(mutationsList[0]);
+      cardState.updateCardState(mutationsList[0]);
+      operator.stateOperator(mutationsList[0]);
+    }
+  }
+
+// ============== EVENT LISTENERS =========================
+// =======================================================
+   cardContainer.addEventListener('click', e => {
+     if (operator.currentlyFlipped.length < 2) {
+       if (e.target.classList.contains('card-face')) {
+         let clickedCard = e.target;
+         // if (!clickedCard.parentElement.classList.contains('flipped')) {
+           // clickedCard.parentElement.classList.toggle('flipped');
+         // }
+         if (clickedCard.parentElement.dataset.flippable !== true) {
+            clickedCard.parentElement.classList.toggle('flipped');
+         }
+       }
+     }
 
    });

@@ -46,6 +46,12 @@ ul {
 
 .flipped {
   transform: rotateY(180deg);
+  pointer-events: none;
+}
+
+.matched {
+  transform: rotateY(180deg);
+  pointer-events: none;
 }
 
 .card-front, .card-back {
@@ -62,4 +68,13 @@ ul {
 .card-back {
   background-color: goldenrod;
   transform: rotateY(180deg);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.card-face .fas {
+  font-family: "Font Awesome 5 Free";
+  font-size: 4.5em;
+  color: #000;
 }
