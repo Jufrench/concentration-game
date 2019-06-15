@@ -55,13 +55,6 @@ function Concentration() {
 
     document.querySelector('.card-list').appendChild(fragment);
   }
-
-  this.checkIfMatch = () => {
-    // if (this.currentSelected.length === 2) {
-    //   return this.currentSelected[0]
-    // }
-
-  }
 };
 
 const game = new Concentration();
