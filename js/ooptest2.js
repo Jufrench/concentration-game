@@ -13,7 +13,7 @@
      'fa-fish', 'fa-frog', 'fa-frog', 'fa-dragon', 'fa-dragon'];
 
      this.init = () => {
-       this.createCardHTML(2);
+       this.createCardHTML(4);
      }
 
      this.createCardHTML = amount => {
@@ -62,17 +62,16 @@
    };
 
    game.init();
-   myObserver.observe(cardContainer, observerConstructor.config);
 
-   // ============== GAME STATE OPERATOR ======================================
-   // =========================================================================
+   // ============== GAME STATE OPERATOR =================
+   // ====================================================
    function Operator() {
      this.cardsArray = [];
      this.flippedCards = 0;
      this.currentlyFlipped = [];
 
      this.gameOperator = mutation => {
-       // If the mutated card element doesn't have the class 'matched'
+       // If mutated card element doesn't have the class 'matched'
        if (!mutation.classList.contains('matched')) {
            this.pushTocurrentlyFlipped(mutation);
         }
@@ -84,11 +83,14 @@
          if (this.checkForMatch()) {
            console.log(`They Match!!!`);
            cardState.stayFlipped(this.currentlyFlipped);
-         }
-         else {
+         } else {
            // If the 2 cards currently selected DON'T match
-           console.log(`They DON'T Match`);
-           this.clearCurrentlyFlipped();
+            console.log(`They DON'T Match`);
+            setTimeout(function() {
+               console.log('Flipping to backside');
+               cardState.flipToBack();
+               operator.clearCurrentlyFlipped();
+            }, 2000);
          }
        }
      }
@@ -99,6 +101,7 @@
 
       // Checks if the 2 cards in 'currentlyFlipped' match
      this.checkForMatch = () => {
+        console.log(this.currentlyFlipped[0].isEqualNode(this.currentlyFlipped[1]));
        return this.currentlyFlipped[0].isEqualNode(this.currentlyFlipped[1]);
      }
 
@@ -107,8 +110,8 @@
      }
    }
 
-// ============== CARD STATE ==================================================
-// ============================================================================
+// ========= CARD STATE ====================================
+// =========================================================
    function CardState() {
 
      this.updateCardState = (paramCard) => {
@@ -117,8 +120,8 @@
        let domCardNumber = parseInt(domCard.dataset.number);
        let objectCard = operator.cardsArray[domCardNumber];
 
-       // If element has class 'flipped', change its corresponding object's
-       // flipped property to true & its flippable property to false
+       // If element has class 'flipped', change corresponding object's
+       // flipped property to true & 'flippable' property to false
        if (cardContent.classList.contains('flipped')) {
           objectCard.flipped = !objectCard.flipped;
           objectCard.flippable = !objectCard.flippable;
@@ -138,12 +141,19 @@
        console.log(operator.cardsArray[operator.cardsArray.indexOf(element)]);
      }
 
-     // this.flipCard = () => {
-     //
-     // }
+     this.flipCard = clickedCard => {
+        clickedCard.parentElement.classList.toggle('flipped');
+     }
+
+     this.flipToBack = () => {
+        // Disonnects observer because we don't want it to run when the class 'flipped' is removed. Otherwise, it'll run again automatically, and infinitely
+        myObserver.disconnect();
+        operator.currentlyFlipped.forEach(card => {
+           card.classList.toggle('flipped');
+        });
+     }
 
      this.stayFlipped = matchedPair => {
-        // console.log(operator.currentlyFlipped);
         matchedPair.forEach(card => {
            card.classList.add('matched');
         });
@@ -151,8 +161,8 @@
      }
    }
 
-// ============== CARD ========================================================
-// ============================================================================
+// ============== CARD ====================================
+// ========================================================
    function Card(element) {
      this.element = element;
      this.cardClasses = element.querySelector('.card-content').classList;
@@ -161,8 +171,8 @@
      this.matched = false;
    }
 
-// ============== OBSERVER ====================================================
-// ============================================================================
+// ============== OBSERVER ==================================
+// ==========================================================
   function MyObserverConstructor() {
     this.config = {
       attributes: true,
@@ -181,9 +191,11 @@
     }
   }
 
-// ============== EVENT LISTENERS =============================================
-// ============================================================================
+// ============== EVENT LISTENERS =============================
+// ============================================================
    cardContainer.addEventListener('click', e => {
+      myObserver.observe(cardContainer, observerConstructor.config);
+      console.log(`Observing...`);
      if (operator.currentlyFlipped.length < 2) {
        if (e.target.classList.contains('card-face')) {
          let clickedCard = e.target;
@@ -191,7 +203,7 @@
            // clickedCard.parentElement.classList.toggle('flipped');
          // }
          if (clickedCard.parentElement.dataset.flippable !== true) {
-            clickedCard.parentElement.classList.toggle('flipped');
+            cardState.flipCard(clickedCard);
          }
        }
      }
