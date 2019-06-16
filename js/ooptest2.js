@@ -46,7 +46,7 @@
      }
 
      this.addDataAttribute = () => {
-       operator.cardsArray.forEach(function(card, index, thisArray) {
+       operator.cardsArray.forEach((card, index, thisArray) => {
          card.element.dataset.number = thisArray.indexOf(card);
        });
      }
