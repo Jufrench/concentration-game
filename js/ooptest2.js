@@ -12,6 +12,9 @@
      'fa-cat',  'fa-otter', 'fa-otter', 'fa-hippo', 'fa-hippo', 'fa-fish',
      'fa-fish', 'fa-frog', 'fa-frog', 'fa-dragon', 'fa-dragon'];
 
+     this.domMoves = document.querySelector('.moves');
+     this.movesCount = 0;
+
      this.init = () => {
        this.createCardHTML(4);
      }
@@ -59,6 +62,19 @@
          // console.log(card);
        }
      }
+
+     this.startTimer = () => {
+       let count = 0;
+       setInterval(() => {
+         document.querySelector('.count').textContent = count.toFixed(2);
+         count++;
+       }, 1000);
+     }
+
+     this.countMoves = () => {
+       domMoves.insertAdjacentText('beforeend', domMoves);
+       this.movesCount++;
+     }
    };
 
    game.init();
@@ -86,7 +102,7 @@
          } else {
            // If the 2 cards currently selected DON'T match
             console.log(`They DON'T Match`);
-            setTimeout(function() {
+            setTimeout(() => {
                console.log('Flipping to backside');
                cardState.flipToBack();
                operator.clearCurrentlyFlipped();
@@ -194,6 +210,8 @@
 // ============== EVENT LISTENERS =============================
 // ============================================================
    cardContainer.addEventListener('click', e => {
+     game.startTimer();
+     game.countMoves();
       myObserver.observe(cardContainer, observerConstructor.config);
       console.log(`Observing...`);
      if (operator.currentlyFlipped.length < 2) {
