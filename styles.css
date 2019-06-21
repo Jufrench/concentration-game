@@ -96,3 +96,10 @@ ul {
   font-size: 4.5em;
   color: #000;
 }
+
+.show-modal {
+   /* opacity: 0; */
+   visibility: hidden;
+   /* position: absolute; */
+   /* left: -9999px; */
+}

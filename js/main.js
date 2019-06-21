@@ -17,7 +17,7 @@
      this.timerStarted = false;
 
      this.init = () => {
-       this.createCardHTML(2);
+       this.createCardHTML(1);
      }
 
      // this.createCardHTML = amount => {
@@ -116,6 +116,7 @@
      this.cardsArray = [];
      this.flippedCards = 0;
      this.currentlyFlipped = [];
+     this.matches = 0;
 
      this.gameOperator = mutation => {
        // If mutated card element doesn't have the class 'matched'
@@ -130,6 +131,8 @@
          if (this.checkForMatch()) {
            console.log(`They Match!!!`);
            cardState.stayFlipped(this.currentlyFlipped);
+           this.increaseMatchCount();
+           this.checkForWin();
          } else {
            // If the 2 cards currently selected DON'T match
             console.log(`They DON'T Match`);
@@ -162,6 +165,22 @@
 
       this.clearCurrentlyFlipped = () => {
          this.currentlyFlipped = [];
+      }
+
+      this.increaseMatchCount = () => {
+         this.matches++;
+      }
+
+      this.checkForWin = () => {
+         console.log('you win');
+         if (this.matches === this.cardsArray.length / 2) {
+            document.querySelector('.modal-title').textContent = 'YOU WIN!';
+         } else {
+            document.querySelector('.modal-title').textContent = 'YOU LOSE, TRY AGAIN!';
+         }
+         setTimeout(() => {
+            document.querySelector('.show-modal').click();
+         }, 1300);
       }
    }
 
@@ -260,18 +279,19 @@
 // ============== EVENT LISTENERS =============================
 // ============================================================
    cardContainer.addEventListener('click', e => {
-      game.startTimer();
-      game.timerStarted = true;
-      game.countMoves();
+      if (!e.target.classList.contains('flipped')) {
+         console.log(`Observing...`);
+         console.log(e.target);
+         game.startTimer();
+         game.timerStarted = true;
+         game.countMoves();
+      }
 
       myObserver.observe(cardContainer, observerConstructor.config);
-      console.log(`Observing...`);
      if (operator.currentlyFlipped.length < 2) {
        if (e.target.classList.contains('card-face')) {
          let clickedCard = e.target;
-         // if (!clickedCard.parentElement.classList.contains('flipped')) {
-           // clickedCard.parentElement.classList.toggle('flipped');
-         // }
+
          if (clickedCard.parentElement.dataset.flippable !== true) {
             cardState.flipCard(clickedCard);
          }
