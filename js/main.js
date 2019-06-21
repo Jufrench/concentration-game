@@ -17,7 +17,11 @@
      this.timerStarted = false;
 
      this.init = () => {
-       this.createCardHTML(1);
+       this.createCardHTML(3);
+       cardObject.addDataAttribute();
+       cardObject.addIcons();
+       this.shuffleCards(operator.cardsArray);
+       this.addCardsToDom();
      }
 
      // this.createCardHTML = amount => {
@@ -49,7 +53,6 @@
           let cardLi = document.createElement('li');
           cardLi.classList.add('card');
           cardLi.innerHTML = `<div class="card-content" data-flippable="true"><div class="card-front card-face">Front</div><div class="card-back card-face"><i class="fas"></i></div></div>`;
-
           operator.pushToCardsArray(cardLi);
       }
 
@@ -59,9 +62,6 @@
 
       // document.querySelector('.card-list').appendChild(fragment);
       // this.loadCardsArray();
-      cardObject.addDataAttribute();
-      cardObject.addIcons();
-      this.addCardsToDom();
      }
 
      // this.loadCardsArray = () => {
@@ -79,9 +79,9 @@
          while (currentIndex !== 0) {
             randomIndex = Math.floor(Math.random() * currentIndex);
             currentIndex -= 1;
-            temporaryValue = array[currentIndex];
-            array[currentIndex] = array[randomIndex];
-            array[randomIndex] = temporaryValue;
+            temporaryValue = theArray[currentIndex];
+            theArray[currentIndex] = theArray[randomIndex];
+            theArray[randomIndex] = temporaryValue;
          }
 
          return theArray;
@@ -94,6 +94,7 @@
          }
          cardList.appendChild(fragment);
       }
+
       this.startTimer = () => {
         if (!this.timerStarted) {
            let count = 0;
@@ -102,7 +103,8 @@
              count++;
            }, 1000);
         }
-     }
+      }
+
       this.countMoves = () => {
         this.domMoves.textContent++;
       }
@@ -117,6 +119,7 @@
      this.flippedCards = 0;
      this.currentlyFlipped = [];
      this.matches = 0;
+     this.rating = 3;
 
      this.gameOperator = mutation => {
        // If mutated card element doesn't have the class 'matched'
@@ -136,6 +139,7 @@
          } else {
            // If the 2 cards currently selected DON'T match
             console.log(`They DON'T Match`);
+            this.changeRating();
             setTimeout(() => {
                console.log('Flipping to backside');
                cardState.flipToBack();
@@ -172,7 +176,6 @@
       }
 
       this.checkForWin = () => {
-         console.log('you win');
          if (this.matches === this.cardsArray.length / 2) {
             document.querySelector('.modal-title').textContent = 'YOU WIN!';
          } else {
@@ -181,6 +184,14 @@
          setTimeout(() => {
             document.querySelector('.show-modal').click();
          }, 1300);
+      }
+
+      this.changeRating = () => {
+        // let theStar = 3;
+        let domStars = document.querySelectorAll('.stars .fa-star');
+        this.rating--;
+        console.log(`Rating: ${this.rating}`);
+        domStars[this.rating].classList.toggle('fa');
       }
    }
 
