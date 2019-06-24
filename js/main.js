@@ -1,53 +1,28 @@
    const cardContainer = document.querySelector('.card-container');
    const cardLis = document.querySelectorAll('.card');
    const cardList = document.querySelector('.card-list');
-   const game = new Concentration();
-   const operator = new Operator();
    const observerConstructor = new MyObserverConstructor();
    const myObserver = new MutationObserver(observerConstructor.callback);
    const cardState = new CardState();
    const cardObject = new Card();
+   const operator = new Operator();
+   const game = new Concentration();
 
    function Concentration() {
      this.icons = ['fa-crow', 'fa-crow', 'fa-horse', 'fa-horse', 'fa-cat',
      'fa-cat',  'fa-otter', 'fa-otter', 'fa-hippo', 'fa-hippo', 'fa-fish',
      'fa-fish', 'fa-frog', 'fa-frog', 'fa-dragon', 'fa-dragon'];
 
-     this.domMoves = document.querySelector('.moves');
-     this.timerStarted = false;
-
      this.init = () => {
-       this.createCardHTML(3);
+       this.createCardHTML(2);
        cardObject.addDataAttribute();
        cardObject.addIcons();
        this.shuffleCards(operator.cardsArray);
        this.addCardsToDom();
      }
 
-     // this.createCardHTML = amount => {
-     //   amount = amount * 2;
-     //   let fragment = document.createDocumentFragment();
-     //   let tempLength = fragment.childNodes.length * 2;
-     //
-     //   for (let i = 1; i <= amount; i++) {
-     //      let card = document.createElement('li');
-     //      card.classList.add('card');
-     //      card.innerHTML = `<div class="card-content" data-flippable="true"><div class="card-front card-face">Front</div><div class="card-back card-face"><i class="fas"></i></div></div>`;
-     //      fragment.appendChild(card);
-     //   }
-     //
-     //   for (let i = 0; i < fragment.childNodes.length; i++) {
-     //     fragment.childNodes[i].querySelector('.fas').classList.add(this.icons[i]);
-     //   }
-     //
-     //   document.querySelector('.card-list').appendChild(fragment);
-     //   this.loadCardsArray();
-     // }
-
      this.createCardHTML = amount => {
       amount = amount * 2;
-      // let fragment = document.createDocumentFragment();
-      // let tempLength = fragment.childNodes.length * 2;
 
       for (let i = 1; i <= amount; i++) {
           let cardLi = document.createElement('li');
@@ -55,23 +30,7 @@
           cardLi.innerHTML = `<div class="card-content" data-flippable="true"><div class="card-front card-face">Front</div><div class="card-back card-face"><i class="fas"></i></div></div>`;
           operator.pushToCardsArray(cardLi);
       }
-
-      // for (let i = 0; i < fragment.childNodes.length; i++) {
-      //    fragment.childNodes[i].querySelector('.fas').classList.add(this.icons[i]);
-      // }
-
-      // document.querySelector('.card-list').appendChild(fragment);
-      // this.loadCardsArray();
      }
-
-     // this.loadCardsArray = () => {
-     //    for (cardElement of cardList.querySelectorAll('.card')) {
-     //       operator.cardsArray.push(new Card(cardElement));
-     //    }
-     //
-     //    console.log(operator.cardsArray);
-     //    this.addDataAttribute();
-     // }
 
       this.shuffleCards = (theArray) => {
          var currentIndex = theArray.length, temporaryValue, randomIndex;
@@ -95,19 +54,6 @@
          cardList.appendChild(fragment);
       }
 
-      this.startTimer = () => {
-        if (!this.timerStarted) {
-           let count = 0;
-           setInterval(() => {
-             document.querySelector('.count').textContent = count.toFixed(2);
-             count++;
-           }, 1000);
-        }
-      }
-
-      this.countMoves = () => {
-        this.domMoves.textContent++;
-      }
    };
 
    game.init();
@@ -120,7 +66,15 @@
      this.currentlyFlipped = [];
      this.matches = 0;
      this.rating = 3;
+     this.ready = true;
+     this.timerStarted = false;
+     this.domMoves = document.querySelector('.moves');
+     this.movesCap = () => {
+       return document.querySelector('.card-list').children.length * 2;
+     }
 
+     // GENERAL OPERATOR
+     // ================
      this.gameOperator = mutation => {
        // If mutated card element doesn't have the class 'matched'
        if (!mutation.classList.contains('matched')) {
@@ -129,22 +83,22 @@
 
        // If there are 2 cards currently selected
        if (this.currentlyFlipped.length === 2) {
-         console.log(`currentlyFlipped`, this.currentlyFlipped);
+
          // If the 2 cards currently selected match each other
          if (this.checkForMatch()) {
-           console.log(`They Match!!!`);
+           cardState.animateMatch(this.currentlyFlipped, 'heartBeat');
            cardState.stayFlipped(this.currentlyFlipped);
            this.increaseMatchCount();
            this.checkForWin();
          } else {
            // If the 2 cards currently selected DON'T match
-            console.log(`They DON'T Match`);
-            this.changeRating();
+           cardState.animateMatch(this.currentlyFlipped, 'shake');
+           this.checkForWin();
+           this.changeRating();
             setTimeout(() => {
-               console.log('Flipping to backside');
                cardState.flipToBack();
                operator.clearCurrentlyFlipped();
-            }, 1500);
+            }, 2000);
          }
        }
       }
@@ -153,17 +107,12 @@
          this.cardsArray.push(new Card(cardLi));
       }
 
-      this.updateDom = () => {
-
-      }
-
       this.pushTocurrentlyFlipped = mutation => {
          this.currentlyFlipped.push(mutation);
       };
 
       // Checks if the 2 cards in 'currentlyFlipped' match
       this.checkForMatch = () => {
-         console.log(this.currentlyFlipped[0].isEqualNode(this.currentlyFlipped[1]));
          return this.currentlyFlipped[0].isEqualNode(this.currentlyFlipped[1]);
       }
 
@@ -176,50 +125,122 @@
       }
 
       this.checkForWin = () => {
-         if (this.matches === this.cardsArray.length / 2) {
-            document.querySelector('.modal-title').textContent = 'YOU WIN!';
-         } else {
+        let movesCap = this.movesCap();
+        let moves = parseInt(this.domMoves.textContent);
+
+        if (moves <= movesCap && this.matches === this.cardsArray.length / 2) {
+          console.log('You Win!');
+          this.startStopTimer('stop');
+          document.querySelector('.modal-title').textContent = 'YOU WIN!';
+          this.showModal();
+        } else if (moves === movesCap && this.matches < this.cardsArray.length / 2) {
+            console.log('You Lose!');
+            this.startStopTimer('stop');
             document.querySelector('.modal-title').textContent = 'YOU LOSE, TRY AGAIN!';
-         }
-         setTimeout(() => {
-            document.querySelector('.show-modal').click();
-         }, 1300);
+            this.showModal();
+        } else {
+            console.log('Keep Going!');
+            return;
+        }
       }
 
+      // CHANGE RATING
       this.changeRating = () => {
-        // let theStar = 3;
+        let movesAmount = parseInt(this.domMoves.textContent);
         let domStars = document.querySelectorAll('.stars .fa-star');
-        this.rating--;
-        console.log(`Rating: ${this.rating}`);
-        domStars[this.rating].classList.toggle('fa');
+        let movesCap = this.movesCap();
+        if (movesCap / 2 === movesAmount || movesAmount === movesCap) {
+          this.rating--;
+        }
+
+        if (this.rating >= 0) {
+            domStars[this.rating - 1].classList.remove('fa');
+        }
+      }
+
+      // TIMER
+      this.startStopTimer = whatParam => {
+        let count = 0;
+        const timerFunction = () => {
+          document.querySelector('.count').textContent = count.toFixed(2);
+          count++;
+        }
+        let timer;
+
+        if (whatParam === 'start') {
+          timer = setInterval(timerFunction, 1000);
+        } else {
+          // Each declared timer returns a number ID. In this case its the integer 2.
+          // Passing the ID to clearInterval stops the timer.
+          clearInterval(2);
+        }
+
+      }
+
+      this.countMoves = () => {
+        this.domMoves.textContent++;
+      }
+
+      this.showModal = () => {
+        let domTime = document.querySelector('.time');
+        let rating = document.querySelector('.rating');
+        domTime.textContent = document.querySelector('.count').textContent;
+        rating.innerHTML = document.querySelector('.stars').outerHTML;
+        setTimeout(() => {
+          document.querySelector('.show-modal').click();
+          this.playAgain();
+        }, 2220);
+      }
+
+      this.playAgain = () => {
+        let playDiv = document.querySelector('.play-div');
+        let theModal = document.querySelector('#the-modal');
+        playDiv.addEventListener('click', e => {
+          if (e.target.classList.contains('btn-yes')) {
+            let button = e.target;
+            this.clearAll();
+            console.log('you hit yes');
+          } else if (e.target.classList.contains('btn-no')) {
+            console.log('you hit no');
+          } else {
+            return;
+          }
+        });
+      }
+
+      this.clearAll = () => {
+        console.log('inside clear all');
+        document.querySelector('.card-list').innerHTML = '';
+        this.matches = 0;
+        this.cardsArray = [];
+        game.init();
       }
    }
 
 // ========= CARD STATE ====================================
 // =========================================================
    function CardState() {
-
      this.updateCardState = (paramCard) => {
-       let domCard = paramCard.parentElement;
-       let cardContent = domCard.childNodes[0];
-       let domCardNumber = parseInt(domCard.dataset.number);
-       let objectCard = operator.cardsArray[domCardNumber];
+         let domCard = paramCard.parentElement;
+         let cardContent = domCard.childNodes[0];
+         let domCardNumber = parseInt(domCard.dataset.number);
+         let objectCard = operator.cardsArray[domCardNumber];
 
-       // If element has class 'flipped', change corresponding object's
-       // flipped property to true & 'flippable' property to false
-       if (cardContent.classList.contains('flipped')) {
-          objectCard.flipped = !objectCard.flipped;
-          objectCard.flippable = !objectCard.flippable;
-       } else {
-           objectCard.flipped = !objectCard.flipped;
-           objectCard.flippable = !objectCard.flippable;
-       }
-
-       operator.cardsArray.map((item, index) => {
-         if (domCardNumber === index) {
-           operator.cardsArray
+         // If element has class 'flipped', change corresponding object's
+         // flipped property to true & 'flippable' property to false
+         if (cardContent.classList.contains('flipped')) {
+            objectCard.flipped = !objectCard.flipped;
+            objectCard.flippable = !objectCard.flippable;
+         } else {
+             objectCard.flipped = !objectCard.flipped;
+             objectCard.flippable = !objectCard.flippable;
          }
-       });
+
+         operator.cardsArray.map((item, index) => {
+           if (domCardNumber === index) {
+             operator.cardsArray
+           }
+         });
      }
 
      this.linkToCardObject = element => {
@@ -231,11 +252,12 @@
      }
 
      this.flipToBack = () => {
-        // Disonnects observer because we don't want it to run when the class 'flipped' is removed. Otherwise, it'll run again automatically, and infinitely
+        // Disonnects observer because we don't want it to run when the class
+        // 'flipped' is removed. Otherwise, it'll run again automatically, and infinitely
         myObserver.disconnect();
-        operator.currentlyFlipped.forEach(card => {
-           card.classList.toggle('flipped');
-        });
+          operator.currentlyFlipped.forEach(card => {
+             card.classList.toggle('flipped');
+          });
      }
 
      this.stayFlipped = matchedPair => {
@@ -244,11 +266,42 @@
         });
         operator.clearCurrentlyFlipped();
      }
+
+     this.animateMatch = (theArray, animation) => {
+       myObserver.disconnect();
+       if (animation === 'heartBeat') {
+         setTimeout(() => {
+           theArray.forEach(card => {
+             card.parentElement.classList.add('animated', animation);
+           });
+         }, 700);
+
+         setTimeout(() => {
+           theArray.forEach(card => {
+             card.parentElement.classList.remove('animated', animation);
+           });
+         }, 3000);
+       }
+
+       if (animation === 'shake') {
+         setTimeout(() => {
+           theArray.forEach(card => {
+             card.parentElement.classList.add('animated', animation);
+           });
+         }, 1000);
+
+         setTimeout(() => {
+           theArray.forEach(card => {
+             card.parentElement.classList.remove('animated', animation);
+           });
+         }, 3000);
+       }
+     }
    }
 
 // ============== CARD ====================================
 // ========================================================
-   function Card(element) {
+  function Card(element) {
      this.element = element;
      this.flippable = true;
      this.flipped = false;
@@ -278,6 +331,7 @@
     };
 
     this.callback = (mutationsList, observer) => {
+      console.log(`Observing...`);
       mutationsList.forEach(mutation => {
         if (!mutation.target.classList.contains('matched')) {
           cardState.updateCardState(mutation.target);
@@ -290,22 +344,27 @@
 // ============== EVENT LISTENERS =============================
 // ============================================================
    cardContainer.addEventListener('click', e => {
-      if (!e.target.classList.contains('flipped')) {
-         console.log(`Observing...`);
-         console.log(e.target);
-         game.startTimer();
-         game.timerStarted = true;
-         game.countMoves();
+      if (!e.target.classList.contains('flipped') && e.target.classList.contains('card-face')) {
+         if (!operator.timerStarted) {
+           operator.startStopTimer('start');
+           operator.timerStarted = !game.timerStarted;
+         }
+         operator.countMoves();
       }
 
       myObserver.observe(cardContainer, observerConstructor.config);
-     if (operator.currentlyFlipped.length < 2) {
-       if (e.target.classList.contains('card-face')) {
-         let clickedCard = e.target;
 
-         if (clickedCard.parentElement.dataset.flippable !== true) {
+      if (operator.currentlyFlipped.length < 2) {
+        if (e.target.classList.contains('card-face')) {
+          let clickedCard = e.target;
+
+          if (clickedCard.parentElement.dataset.flippable !== true) {
             cardState.flipCard(clickedCard);
-         }
-       }
-     }
+          }
+        }
+      }
    });
+
+document.querySelector('.theButton').addEventListener('click', () => {
+  document.querySelector('.show-modal').click();
+});

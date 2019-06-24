@@ -5,7 +5,8 @@
     <title>Concentration by Julian French</title>
     <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.6.3/css/all.css" integrity="sha384-UHRtZLI+pbxtHCWp1t77Bi1L4ZtiqrqD80Kn4Z8NTSRyMA2Fd33n5dQ8lWUE00s/" crossorigin="anonymous">
     <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css" integrity="sha384-Gn5384xqQ1aoWXA+058RXPxPg6fy4IWvTNh0E263XmFcJlSAwiGgFAW/dAiS6JXm" crossorigin="anonymous">
-    <link rel="stylesheet" href="styles.css">
+    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/3.7.2/animate.min.css">
   </head>
   <body>
     <header>
@@ -17,7 +18,7 @@
         <h4>Timer: <span class="count">0.00</span></h4>
         <h4>Moves: <span class="moves">0</span></h4>
         <h4>
-          <span>Rating: </span>
+          <span class="animated bounce infinite">Rating: </span>
           <span class="stars">
             <i class="fa far fa-star"></i>
             <i class="fa far fa-star"></i>
@@ -30,6 +31,7 @@
         <ul class="card-list">
 
         </ul>
+        <button class="theButton">click me!</button>
       </div>
     </main>
     <footer></footer>
@@ -45,13 +47,13 @@
             </button>
          </div>
          <div class="modal-body">
-            <p>Completion time: <span></span></p>
-            <p>Star rating: <span></span></p>
+            <p>Completion time: <span class="time"></span></p>
+            <p>Star rating: <span class="rating"></span></p>
             <p>Would you like to play again?</p>
          </div>
-         <div class="modal-footer">
-            <button type="button" class="btn btn-primary">Yes</button>
-            <button type="button" class="btn btn-secondary" data-dismiss="modal">No</button>
+         <div class="modal-footer play-div">
+            <button type="button" class="btn btn-primary btn-play btn-yes" data-dismiss="modal">Yes</button>
+            <button type="button" class="btn btn-secondary btn-play btn-no" data-dismiss="modal">No</button>
          </div>
       </div>
    </div>
