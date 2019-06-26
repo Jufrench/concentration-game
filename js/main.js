@@ -162,7 +162,7 @@
       this.startStopTimer = whatParam => {
         let count = 0;
         const timerFunction = () => {
-          document.querySelector('.count').textContent = count.toFixed(2);
+          document.querySelector('.time-counter').textContent = count.toFixed(2);
           count++;
         }
         let timer;
@@ -184,12 +184,12 @@
       this.showModal = () => {
         let domTime = document.querySelector('.time');
         let rating = document.querySelector('.rating');
-        domTime.textContent = document.querySelector('.count').textContent;
+        domTime.textContent = document.querySelector('.time-counter').textContent;
         rating.innerHTML = document.querySelector('.stars').outerHTML;
         setTimeout(() => {
           document.querySelector('.show-modal').click();
           this.playAgain();
-        }, 2220);
+        }, 2200);
       }
 
       this.playAgain = () => {
@@ -211,8 +211,16 @@
       this.clearAll = () => {
         console.log('inside clear all');
         document.querySelector('.card-list').innerHTML = '';
+        cardList.innerHTML = '';
+        document.querySelector('.time-counter').textContent = '0.00';
+        document.querySelector('.moves').textContent = '0';
         this.matches = 0;
         this.cardsArray = [];
+        document.querySelectorAll('.fa-star').forEach(star => {
+          if (!star.classList.contains('fa')) {
+            star.classList.add('fa');
+          }
+        });
         game.init();
       }
    }
