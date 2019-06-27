@@ -27,7 +27,7 @@
       for (let i = 1; i <= amount; i++) {
           let cardLi = document.createElement('li');
           cardLi.classList.add('card');
-          cardLi.innerHTML = `<div class="card-content" data-flippable="true"><div class="card-front card-face">Front</div><div class="card-back card-face"><i class="fas"></i></div></div>`;
+          cardLi.innerHTML = `<div class="card-content" data-flippable="true"><div class="card-front card-face"></div><div class="card-back card-face"><i class="fas"></i></div></div>`;
           operator.pushToCardsArray(cardLi);
       }
      }
@@ -160,6 +160,7 @@
 
       // TIMER
       this.startStopTimer = whatParam => {
+        console.log(`go go go`);
         let count = 0;
         const timerFunction = () => {
           document.querySelector('.time-counter').textContent = count.toFixed(2);
@@ -199,9 +200,9 @@
           if (e.target.classList.contains('btn-yes')) {
             let button = e.target;
             this.clearAll();
-            console.log('you hit yes');
           } else if (e.target.classList.contains('btn-no')) {
             console.log('you hit no');
+            this.startStopTimer('stop');
           } else {
             return;
           }
@@ -221,6 +222,7 @@
             star.classList.add('fa');
           }
         });
+        operator.timerStarted = !operator.timerStarted;
         game.init();
       }
    }
@@ -339,7 +341,6 @@
     };
 
     this.callback = (mutationsList, observer) => {
-      console.log(`Observing...`);
       mutationsList.forEach(mutation => {
         if (!mutation.target.classList.contains('matched')) {
           cardState.updateCardState(mutation.target);
@@ -355,7 +356,7 @@
       if (!e.target.classList.contains('flipped') && e.target.classList.contains('card-face')) {
          if (!operator.timerStarted) {
            operator.startStopTimer('start');
-           operator.timerStarted = !game.timerStarted;
+           operator.timerStarted = !operator.timerStarted;
          }
          operator.countMoves();
       }
@@ -373,6 +374,12 @@
       }
    });
 
-document.querySelector('.theButton').addEventListener('click', () => {
-  document.querySelector('.show-modal').click();
-});
+   document.querySelector('.refresh-btn').addEventListener('click', e => {
+     console.log(e.target);
+     operator.clearAll();
+     operator.startStopTimer('stop');
+   });
+
+// document.querySelector('.theButton').addEventListener('click', () => {
+//   document.querySelector('.show-modal').click();
+// });
